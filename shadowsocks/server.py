@@ -25,7 +25,7 @@ import signal
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '../'))
 from shadowsocks import shell, daemon, eventloop, tcprelayserver, udprelay, \
-    asyncdns, manager
+    asyncdns, manager, authserver
 
 
 def main():
@@ -56,6 +56,7 @@ def main():
 
     tcp_servers = []
     udp_servers = []
+    auth_server = []
     dns_resolver = asyncdns.DNSResolver()
     port_password = config['port_password']
     del config['port_password']
@@ -65,7 +66,10 @@ def main():
         a_config['password'] = password
         logging.info("starting server at %s:%d" %
                      (a_config['server'], int(port)))
-        tcp_servers.append(tcprelayserver.TCPRelay(a_config, dns_resolver))
+        auth = authserver.TCPRelay()
+        auth_server.append(auth)
+        tcp_servers.append(tcprelayserver.TCPRelay(a_config, dns_resolver, auth))
+        
         #udp_servers.append(udprelay.UDPRelay(a_config, dns_resolver))
 
     def run_server():
@@ -80,16 +84,16 @@ def main():
             sys.exit(1)
         signal.signal(signal.SIGINT, int_handler)
 
-        try:
-            loop = eventloop.EventLoop()
-            dns_resolver.add_to_loop(loop)
-            list(map(lambda s: s.add_to_loop(loop), tcp_servers + udp_servers))
+        # try:
+        loop = eventloop.EventLoop()
+        dns_resolver.add_to_loop(loop)
+        list(map(lambda s: s.add_to_loop(loop), tcp_servers + udp_servers + auth_server))
 
-            daemon.set_user(config.get('user', None))
-            loop.run()
-        except Exception as e:
-            shell.print_exception(e)
-            sys.exit(1)
+        daemon.set_user(config.get('user', None))
+        loop.run()
+        # except Exception as e:
+        #     shell.print_exception(e)
+        #     sys.exit(1)
 
     if int(config['workers']) > 1:
         if os.name == 'posix':

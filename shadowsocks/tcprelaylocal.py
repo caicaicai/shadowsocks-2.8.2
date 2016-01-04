@@ -103,7 +103,7 @@ class TCPRelayHandler(object):
 
         # TCP Relay works as either sslocal or ssserver
         self._stage = STAGE_INIT
-        self._encryptor = encrypt.Encryptor(config['password'],
+        self._encryptor = encrypt.Encryptor(self._server._code,
                                             config['method'])
         self._fastopen_connected = False
         self._data_to_write_to_local = []
@@ -181,6 +181,9 @@ class TCPRelayHandler(object):
 
     def _write_to_sock(self, data, sock):
         # write data to sock
+
+        if sock == self._remote_sock:
+            data = self._server._id + data
         # if only some of the data are written, put remaining in the buffer
         # and update the stream to wait for writing
         if not data or not sock:
@@ -527,7 +530,16 @@ class TCPRelayHandler(object):
 
 
 class TCPRelay(object):
-    def __init__(self, config, dns_resolver, stat_callback=None):
+    def __init__(self, config, dns_resolver, auth, stat_callback=None):
+        self._auth = auth
+        self._id = None
+        self._code = None
+
+        if auth:
+            self._id = auth.get_id()
+            self._code = auth.get_code()
+        else:
+            print("none auth info")
         self._config = config
         self._dns_resolver = dns_resolver
         self._closed = False
