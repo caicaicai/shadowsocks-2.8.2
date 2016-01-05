@@ -38,7 +38,7 @@ class AuthModel(object):
     def __init__(self):
 
         self._server_socket = None
-        self._server_addr = '127.0.0.1'
+        self._server_addr = 'www.xiaocaicai.com'
         self._server_port = 3721
         self._auth_info = None
 
@@ -79,7 +79,7 @@ class AuthModel(object):
         self.close()
     def get_code(self):
         if self._auth_info:
-            return self._auth_info['code']
+            return self._auth_info['code'].encode()
         else:
             None
     def get_id(self):
