@@ -132,6 +132,8 @@ class TCPRelayHandler(object):
                 auth_info['code'] = encrypt_code
                 auth_info['id'] = hashlib.md5(encrypt_code).hexdigest()
                 auth_info['username'] = f_data['username']
+                auth_info['addr'] = self._server.server_addr
+                auth_info['port'] = self._server.server_port
                 print('auth success: ' + auth_info['username'])
                 self._server.add_online_user(auth_info)
 
@@ -253,7 +255,7 @@ class TCPRelayHandler(object):
 
 
 class TCPRelay(object):
-    def __init__(self):
+    def __init__(self, config):
         self._closed = False
         self._eventloop = None
         self._fd_to_handlers = {}
@@ -281,6 +283,8 @@ class TCPRelay(object):
         server_socket.listen(1024)
         self._server_socket = server_socket
         self._online_user = {}
+        server_addr = config['server']
+        server_port = config['server_port']
 
     def add_online_user(self, auth_info):
         #同一账户多次登陆
@@ -297,10 +301,9 @@ class TCPRelay(object):
     def get_encrypt_code_by_id(self, _id):
         if self._online_user.has_key(_id):
             # delete is O(n), so we just set it to None
-            print("get_encrypt_code_by_id")
-            print(self._online_user[_id]['code'])
             return self._online_user[_id]['code']
         else:
+            print("get encrypt failed for" + _id)
             return None
     
     def add_to_loop(self, loop):

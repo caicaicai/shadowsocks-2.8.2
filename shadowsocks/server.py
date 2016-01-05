@@ -66,10 +66,10 @@ def main():
         a_config['password'] = password
         logging.info("starting server at %s:%d" %
                      (a_config['server'], int(port)))
-        auth = authserver.TCPRelay()
+        auth = authserver.TCPRelay(a_config)
         auth_server.append(auth)
         tcp_servers.append(tcprelayserver.TCPRelay(a_config, dns_resolver, auth))
-        
+
         #udp_servers.append(udprelay.UDPRelay(a_config, dns_resolver))
 
     def run_server():
