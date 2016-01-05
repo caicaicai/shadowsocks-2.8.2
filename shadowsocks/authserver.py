@@ -139,10 +139,10 @@ class TCPRelayHandler(object):
 
                 return json.JSONEncoder().encode(auth_info)
             else:
-                return 'error'
+                return return json.JSONEncoder().encode({'s':0})
         except Exception as e:
             print(e)
-        return 'error'
+        return return json.JSONEncoder().encode({'s':0})
 
     def _update_stream(self, stream, status):
         # update a stream to a new waiting status
