@@ -283,8 +283,8 @@ class TCPRelay(object):
         server_socket.listen(1024)
         self._server_socket = server_socket
         self._online_user = {}
-        server_addr = config['server']
-        server_port = config['server_port']
+        self.server_addr = config['server']
+        self.server_port = config['server_port']
 
     def add_online_user(self, auth_info):
         #同一账户多次登陆
