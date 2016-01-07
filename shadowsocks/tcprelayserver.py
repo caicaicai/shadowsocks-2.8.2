@@ -138,6 +138,10 @@ class TCPRelayHandler(object):
                 print('_encrypt_key: ' + encrypt_key)
                 self._encryptor = encrypt.Encryptor(encrypt_key, self._config['method'])
             else:
+                #非法用户
+                info = "what are you looking for? bad user id! "
+                self._data_to_write_to_local.append(info.encode())
+                self._on_local_write()
                 print("bad user_id")
 
     def __hash__(self):
