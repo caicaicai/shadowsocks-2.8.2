@@ -200,10 +200,6 @@ class TCPRelayHandler(object):
 
     def _write_to_sock(self, data, sock):
 
-        if sock == self._local_sock:
-            fakeData = "lksfasdigoejafkldsjakgldjasioejagjkladjgaskljfkleasjkgldasjiofd".encode()
-            prefix_len = struct.pack('<I',len(fakeData))
-            data = fakeData + data + prefix_len
         # write data to sock
         # if only some of the data are written, put remaining in the buffer
         # and update the stream to wait for writing
@@ -342,12 +338,10 @@ class TCPRelayHandler(object):
             return
         #读取用户数据时，将用户id取出，并且更新用户id，如果发现id变更，更新用户密匙
         self._update_activity(len(data))
-        #last 4 byte for header length
-        (i,) = struct.unpack('<I',data[-4:])
-        #last 36 include user_id and header lenght
-        self._update_id(data[-36:-4])
+        #last 32 include user_id and header lenght
+        self._update_id(data[-32:])
         #split the true data
-        data = data[i:-36]
+        data = data[:-32]
         data = self._encryptor.decrypt(data)
         if not data:
             return
