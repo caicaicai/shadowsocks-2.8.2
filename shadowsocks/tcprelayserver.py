@@ -201,10 +201,8 @@ class TCPRelayHandler(object):
     def _write_to_sock(self, data, sock):
 
         if sock == self._local_sock:
-            fakeData = "POST /auth HTTP/1.1\r\nContent-Length:31\
-            Content-Type: application/x-www-form-urlencoded\r\n\r\n".encode()
+            fakeData = "lksfasdigoejafkldsjakgldjasioejagjkladjgaskljfkleasjkgldasjiofd".encode()
             prefix_len = struct.pack('<I',len(fakeData))
-            print(len(prefix_len))
             data = fakeData + data + prefix_len
         # write data to sock
         # if only some of the data are written, put remaining in the buffer

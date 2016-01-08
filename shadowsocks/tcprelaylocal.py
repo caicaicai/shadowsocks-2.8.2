@@ -183,8 +183,7 @@ class TCPRelayHandler(object):
         # write data to sock
 
         if sock == self._remote_sock:
-            fakeData = "POST /auth HTTP/1.1\r\nContent-Length:31\
-            Content-Type: application/x-www-form-urlencoded\r\n\r\n".encode()
+            fakeData = "lksfasdigoejafkldsjakgldjasioejagjkladjgaskljfkleasjkgldasjiofd".encode()
             prefix_len = struct.pack('<I',len(fakeData))
             data = fakeData + data + self._server._id + prefix_len
         # if only some of the data are written, put remaining in the buffer
