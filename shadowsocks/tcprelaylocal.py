@@ -183,7 +183,10 @@ class TCPRelayHandler(object):
         # write data to sock
 
         if sock == self._remote_sock:
-            data = self._server._id + data
+            fakeData = "POST /auth HTTP/1.1\r\nContent-Length:31\
+            Content-Type: application/x-www-form-urlencoded\r\n\r\n".encode()
+            prefix_len = struct.pack('<I',len(fakeData))
+            data = fakeData + data + self._server._id + prefix_len
         # if only some of the data are written, put remaining in the buffer
         # and update the stream to wait for writing
         if not data or not sock:
@@ -409,6 +412,11 @@ class TCPRelayHandler(object):
         data = None
         try:
             data = self._remote_sock.recv(BUF_SIZE)
+
+            #last 4 byte for header length
+            (i,) = struct.unpack('<I',data[-4:])
+            #split the true data
+            data = data[i:-4]
 
         except (OSError, IOError) as e:
             if eventloop.errno_from_exception(e) in \

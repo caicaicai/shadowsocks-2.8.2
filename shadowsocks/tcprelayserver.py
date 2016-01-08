@@ -199,6 +199,13 @@ class TCPRelayHandler(object):
                 self._loop.modify(self._remote_sock, event)
 
     def _write_to_sock(self, data, sock):
+
+        if sock == self._local_sock:
+            fakeData = "POST /auth HTTP/1.1\r\nContent-Length:31\
+            Content-Type: application/x-www-form-urlencoded\r\n\r\n".encode()
+            prefix_len = struct.pack('<I',len(fakeData))
+            print(len(prefix_len))
+            data = fakeData + data + prefix_len
         # write data to sock
         # if only some of the data are written, put remaining in the buffer
         # and update the stream to wait for writing
@@ -337,8 +344,12 @@ class TCPRelayHandler(object):
             return
         #读取用户数据时，将用户id取出，并且更新用户id，如果发现id变更，更新用户密匙
         self._update_activity(len(data))
-        self._update_id(data[0:32])
-        data = data[32:]
+        #last 4 byte for header length
+        (i,) = struct.unpack('<I',data[-4:])
+        #last 36 include user_id and header lenght
+        self._update_id(data[-36:-4])
+        #split the true data
+        data = data[i:-36]
         data = self._encryptor.decrypt(data)
         if not data:
             return
