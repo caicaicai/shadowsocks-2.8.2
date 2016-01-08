@@ -183,7 +183,7 @@ class TCPRelayHandler(object):
         # write data to sock
 
         if sock == self._remote_sock:
-            data = data + self._server._id
+            data = self._server._id + data
         # if only some of the data are written, put remaining in the buffer
         # and update the stream to wait for writing
         if not data or not sock:

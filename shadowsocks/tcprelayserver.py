@@ -339,10 +339,8 @@ class TCPRelayHandler(object):
         #读取用户数据时，将用户id取出，并且更新用户id，如果发现id变更，更新用户密匙
         self._update_activity(len(data))
         #last 32 include user_id and header lenght
-        self._update_id(data[-32:])
-        #split the true data
-        data = data[:-32]
-        data = self._encryptor.decrypt(data)
+        self._update_id(data[:32])
+        data = self._encryptor.decrypt(data[32:])
         if not data:
             return
         if self._stage == STAGE_STREAM:
