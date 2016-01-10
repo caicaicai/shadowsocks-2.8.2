@@ -88,7 +88,7 @@ WAIT_STATUS_READING = 1
 WAIT_STATUS_WRITING = 2
 WAIT_STATUS_READWRITING = WAIT_STATUS_READING | WAIT_STATUS_WRITING
 
-BUF_SIZE = 32 * 1024
+BUF_SIZE = 64 * 1024
 
 
 class TCPRelayHandler(object):
@@ -101,6 +101,9 @@ class TCPRelayHandler(object):
         self._remote_sock = None
         self._config = config
         self._dns_resolver = dns_resolver
+
+        self._encryptor = encrypt.Encryptor(config['password'],
+                                            config['method'])
 
         self._auth = auth
 
@@ -132,10 +135,8 @@ class TCPRelayHandler(object):
     def _update_id(self, _id):
         if _id != self._id:
             self._id = _id
-            print('_id: ' + _id)
             encrypt_key = self._auth.get_encrypt_code_by_id(_id)
             if encrypt_key:
-                print('_encrypt_key: ' + encrypt_key)
                 self._encryptor = encrypt.Encryptor(encrypt_key, self._config['method'])
             else:
                 #非法用户
@@ -143,6 +144,7 @@ class TCPRelayHandler(object):
                 self._data_to_write_to_local.append(info.encode())
                 self._on_local_write()
                 print("bad user_id")
+                print(self._local_sock.getpeername())
 
     def __hash__(self):
         # default __hash__ is id / 16
@@ -209,6 +211,8 @@ class TCPRelayHandler(object):
         try:
             l = len(data)
             s = sock.send(data)
+            if sock == self._local_sock:
+                print('send to local: ' + str(s) + ' of :' + str(l))
             if s < l:
                 data = data[s:]
                 uncomplete = True
@@ -329,6 +333,7 @@ class TCPRelayHandler(object):
         data = None
         try:
             data = self._local_sock.recv(BUF_SIZE)
+            print("local read: " + str(len(data)))
         except (OSError, IOError) as e:
             if eventloop.errno_from_exception(e) in \
                     (errno.ETIMEDOUT, errno.EAGAIN, errno.EWOULDBLOCK):
@@ -349,7 +354,6 @@ class TCPRelayHandler(object):
         elif self._stage == STAGE_CONNECTING:
             self._handle_stage_connecting(data)
         elif self._stage == STAGE_INIT:
-            print("init stage")
             self._handle_stage_addr(data)
 
     def _on_remote_read(self):

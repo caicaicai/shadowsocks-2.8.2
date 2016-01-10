@@ -84,16 +84,17 @@ def main():
             sys.exit(1)
         signal.signal(signal.SIGINT, int_handler)
 
-        # try:
-        loop = eventloop.EventLoop()
-        dns_resolver.add_to_loop(loop)
-        list(map(lambda s: s.add_to_loop(loop), tcp_servers + udp_servers + auth_server))
+        try:
+            loop = eventloop.EventLoop()
+            dns_resolver.add_to_loop(loop)
+            list(map(lambda s: s.add_to_loop(loop), tcp_servers + udp_servers + auth_server))
 
-        daemon.set_user(config.get('user', None))
-        loop.run()
-        # except Exception as e:
-        #     shell.print_exception(e)
-        #     sys.exit(1)
+            daemon.set_user(config.get('user', None))
+            loop.run()
+        except Exception as e:
+            print(e)
+            shell.print_exception(e)
+            sys.exit(1)
 
     if int(config['workers']) > 1:
         if os.name == 'posix':

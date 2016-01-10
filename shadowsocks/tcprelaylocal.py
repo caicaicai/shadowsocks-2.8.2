@@ -87,7 +87,7 @@ WAIT_STATUS_READING = 1
 WAIT_STATUS_WRITING = 2
 WAIT_STATUS_READWRITING = WAIT_STATUS_READING | WAIT_STATUS_WRITING
 
-BUF_SIZE = 32 * 1024
+BUF_SIZE = 64 * 1024
 
 
 class TCPRelayHandler(object):
@@ -184,6 +184,7 @@ class TCPRelayHandler(object):
 
         if sock == self._remote_sock:
             data = self._server._id + data
+            print("write to remote:" + str(len(data)))
         # if only some of the data are written, put remaining in the buffer
         # and update the stream to wait for writing
         if not data or not sock:
@@ -409,6 +410,8 @@ class TCPRelayHandler(object):
         data = None
         try:
             data = self._remote_sock.recv(BUF_SIZE)
+
+            print("remote read: " + str(len(data)))
 
         except (OSError, IOError) as e:
             if eventloop.errno_from_exception(e) in \
